@@ -21,8 +21,9 @@ Create a project and copy the connection string (it ends in `?sslmode=require`).
 ## 2. API (Render)
 
 1. Push this folder to a GitHub repo.
-2. Render → **New → Blueprint** → pick the repo (it reads `render.yaml`). Use a paid instance: the free plan
-   sleeps, which delays messages and notifications.
+2. Render → **New → Blueprint** → pick the repo (it reads `render.yaml`). Plan is **Free**. It sleeps after ~15 min idle, which delays messages and
+   notifications. Fix: add a free monitor (UptimeRobot / cron-job.org) that opens `https://<your-api>/health`
+   every 5 minutes. Free instances also have no Shell and a monthly hour limit; switch `plan:` to `starter` for always-on.
 3. Fill the environment variables it asks for:
 
 | Variable | Value |
@@ -34,10 +35,11 @@ Create a project and copy the connection string (it ends in `?sslmode=require`).
 
    `JWT_SECRET` is generated for you. The tables are created automatically on every start.
 4. When it is live, `https://<your-api>/health` must answer `{"status":"ok"}`.
-5. Create the first Super Admin (Render → service → **Shell**):
+5. Create the first Super Admin. Free instances have no Shell, so run this on your own computer against Neon
+   (in the `backend` folder, after `npm install`):
 
 ```bash
-npm run create-admin -- "Dharmendra" dharmendra@yourcompany.com "a-long-password"
+DATABASE_URL='<neon connection string>' PGSSL=true npm run create-admin -- "Dharmendra" dharmendra@yourcompany.com "a-long-password"
 ```
 
    Do **not** run `db:seed` in production: it wipes the database.

@@ -6,8 +6,9 @@ services:
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    # "starter" or higher: the free plan sleeps, which delays real-time messages and push notifications.
-    plan: starter
+    # Free plan: sleeps after ~15 min idle (first request takes ~30-60 s). Ping /health every 5 min to keep it awake,
+    # or switch to "starter" for always-on.
+    plan: free
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
