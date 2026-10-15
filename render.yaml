@@ -31,3 +31,10 @@ services:
         sync: false
       - key: VAPID_SUBJECT
         sync: false          # mailto:you@yourcompany.com
+      # First Super Admin: created on start only if none exists. Delete ADMIN_PASSWORD after your first login.
+      - key: ADMIN_NAME
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false          # 10+ characters

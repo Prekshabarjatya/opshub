@@ -35,12 +35,10 @@ Create a project and copy the connection string (it ends in `?sslmode=require`).
 
    `JWT_SECRET` is generated for you. The tables are created automatically on every start.
 4. When it is live, `https://<your-api>/health` must answer `{"status":"ok"}`.
-5. Create the first Super Admin. Free instances have no Shell, so run this on your own computer against Neon
-   (in the `backend` folder, after `npm install`):
-
-```bash
-DATABASE_URL='<neon connection string>' PGSSL=true npm run create-admin -- "Dharmendra" dharmendra@yourcompany.com "a-long-password"
-```
+5. Create the first Super Admin: also set `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` (10+ characters) on Render.
+   On start, the API creates that Super Admin if none exists yet. After your first login, **delete
+   `ADMIN_PASSWORD`** from Render's environment. (Alternative from your own computer:
+   `DATABASE_URL='<neon string>' PGSSL=true npm run create-admin -- "Name" email "password"`.)
 
    Do **not** run `db:seed` in production: it wipes the database.
 
