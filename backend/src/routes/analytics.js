@@ -48,7 +48,7 @@ router.get(
     const { from, to, deptId, userId } = parseScope(req);
     const params = [from, to, deptId, userId];
 
-    const [departments, employees, blocked] = await Promise.all([
+    const [departments, employees, blocked, tasks] = await Promise.all([
       pool.query(
         `SELECT d.id, d.name, ${COUNTS}
            FROM departments d
@@ -87,6 +87,19 @@ router.get(
           ORDER BY g.blocked_at`,
         [deptId, userId]
       ),
+      // Every task entered in the range (cancelled included, shown struck through), grouped per employee client-side.
+      pool.query(
+        `SELECT g.id, g.user_id, g.title, g.status, g.goal_date, g.created_at, g.completed_at
+           FROM goals g
+           JOIN users u ON u.id = g.user_id
+          WHERE g.goal_date BETWEEN $1::date AND $2::date
+            AND u.active AND u.role <> 'super_admin'
+            AND ($3::int IS NULL OR u.department_id = $3)
+            AND ($4::int IS NULL OR u.id = $4)
+          ORDER BY g.goal_date DESC, g.created_at DESC
+          LIMIT 3000`,
+        params
+      ),
     ]);
 
     const deptRows = departments.rows.map(withPct);
@@ -109,6 +122,7 @@ router.get(
       departments: deptRows,
       employees: empRows,
       blocked_tasks: blocked.rows,
+      tasks: tasks.rows,
     });
   })
 );

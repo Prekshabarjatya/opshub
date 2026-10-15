@@ -18,7 +18,7 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useNotifications } from '@/lib/notifications';
 import { dateStr, daysAgoStr, fmtDateTime, fmtDay, ROLE_LABEL } from '@/lib/format';
-import { Progress, useRoleGuard } from '@/components/ui';
+import { Progress, StatusBadge, useRoleGuard } from '@/components/ui';
 
 const COLOR_DONE = '#15803d';
 const COLOR_PENDING = '#cbd3e3';
@@ -57,6 +57,21 @@ function DeptPie({ dept }) {
   );
 }
 
+function EmployeeTasks({ tasks, multiDay }) {
+  if (!tasks || tasks.length === 0) return null;
+  return (
+    <ul className="emp-tasks">
+      {tasks.map((t) => (
+        <li key={t.id} className={t.status === 'cancelled' ? 'cancelled' : ''}>
+          <span className={t.status === 'completed' ? 'done' : ''}>{t.title}</span>
+          {multiDay && <span className="muted small"> · {t.goal_date}</span>}
+          <StatusBadge status={t.status} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export default function AnalyticsPage() {
   const allowed = useRoleGuard(['super_admin', 'dept_head']);
   const { user } = useAuth();
@@ -83,6 +98,12 @@ export default function AnalyticsPage() {
       })
       .catch((e) => setError(e.message));
   }, [allowed]);
+
+  const tasksByUser = useMemo(() => {
+    const m = {};
+    for (const t of (data && data.tasks) || []) (m[t.user_id] = m[t.user_id] || []).push(t);
+    return m;
+  }, [data]);
 
   const query = useMemo(() => {
     const qs = new URLSearchParams({ from, to });
@@ -316,6 +337,7 @@ export default function AnalyticsPage() {
                         </span>
                       </div>
                       <Progress pct={e.completion_pct} />
+                      <EmployeeTasks tasks={tasksByUser[e.id]} multiDay={from !== to} />
                     </div>
                   ))}
                 </div>

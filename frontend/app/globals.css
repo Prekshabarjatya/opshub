@@ -237,3 +237,17 @@ tr:last-child td { border-bottom: none; }
   .kpi .value { font-size: 23px; }
   h1 { font-size: 20px; }
 }
+
+.emp-tasks { list-style: none; margin: 8px 0 0; padding: 0 0 0 10px; border-left: 2px solid var(--border, #e5e7eb); display: flex; flex-direction: column; gap: 4px; }
+.emp-tasks li { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.emp-tasks li > span:first-child { flex: 1; min-width: 0; }
+.emp-tasks li .done { text-decoration: line-through; color: var(--muted); }
+.emp-tasks li.cancelled > span:first-child { text-decoration: line-through; color: var(--muted); }
+
+.multipick { display: flex; flex-direction: column; gap: 8px; }
+.multipick-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px; align-items: center; }
+.chip { border: 1px solid var(--border, #d1d5db); background: var(--primary-soft, #eff6ff); color: inherit; border-radius: 999px; padding: 3px 10px; font-size: 13px; cursor: pointer; }
+.chip:hover { background: #dbeafe; }
+.multipick-list { max-height: 170px; overflow: auto; border: 1px solid var(--border, #d1d5db); border-radius: 8px; background: var(--surface, #fff); }
+.multipick-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 14px; cursor: pointer; }
+.multipick-item:hover { background: rgba(0,0,0,.04); }

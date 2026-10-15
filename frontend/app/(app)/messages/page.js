@@ -7,6 +7,44 @@ import { useAuth } from '@/lib/auth';
 import { useNotifications } from '@/lib/notifications';
 import { fmtDateTime } from '@/lib/format';
 
+function MultiPick({ options, value, onChange, searchable }) {
+  const [filter, setFilter] = useState('');
+  const shown = options.filter((o) => o.label.toLowerCase().includes(filter.trim().toLowerCase()));
+  const toggle = (id) => onChange(value.includes(id) ? value.filter((v) => v !== id) : [...value, id]);
+  const byId = Object.fromEntries(options.map((o) => [o.id, o]));
+  return (
+    <div className="multipick">
+      <div className="multipick-chips">
+        {value.length === 0 && <span className="muted small">Nobody selected yet</span>}
+        {value.map((id) => (
+          <button type="button" key={id} className="chip" onClick={() => toggle(id)} aria-label={`Remove ${(byId[id] || {}).short || (byId[id] || {}).label || id}`}>
+            {(byId[id] && (byId[id].short || byId[id].label)) || id} ✕
+          </button>
+        ))}
+      </div>
+      {searchable && (
+        <input className="input" placeholder="Search people…" value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Search people" />
+      )}
+      <div className="multipick-list" role="group" aria-label="Choose recipients">
+        {shown.map((o) => (
+          <label key={o.id} className="multipick-item">
+            <input type="checkbox" checked={value.includes(o.id)} onChange={() => toggle(o.id)} />
+            <span>{o.label}</span>
+          </label>
+        ))}
+        {shown.length === 0 && <div className="muted small" style={{ padding: 8 }}>No match</div>}
+      </div>
+      <div className="row between small">
+        <span className="muted">{value.length} selected</span>
+        <span>
+          <button type="button" className="btn btn-sm" onClick={() => onChange([...new Set([...value, ...shown.map((o) => o.id)])])}>Select all{filter ? ' shown' : ''}</button>{' '}
+          <button type="button" className="btn btn-sm" onClick={() => onChange([])} disabled={value.length === 0}>Clear</button>
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function Composer({ onSent }) {
   const { user } = useAuth();
   const params = useSearchParams();
@@ -15,7 +53,7 @@ function Composer({ onSent }) {
   const [departments, setDepartments] = useState([]);
   const [users, setUsers] = useState([]);
   const [targetType, setTargetType] = useState(isAdmin ? 'all' : 'dept');
-  const [targetId, setTargetId] = useState('');
+  const [targetIds, setTargetIds] = useState([]);
   const [body, setBody] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -35,7 +73,7 @@ function Composer({ onSent }) {
     const to = params.get('to_user');
     if (to) {
       setTargetType('user');
-      setTargetId(to);
+      setTargetIds([String(to)]);
       const ref = params.get('ref');
       if (ref) setBody(`Re: "${ref}": can you share an update on what is blocking this and what you need?`);
     }
@@ -49,9 +87,10 @@ function Composer({ onSent }) {
     try {
       const d = await api('/api/messages', {
         method: 'POST',
-        body: { target_type: targetType, target_id: targetType === 'all' ? undefined : Number(targetId), body },
+        body: { target_type: targetType, target_ids: targetType === 'all' ? undefined : targetIds.map(Number), body },
       });
       setBody('');
+      setTargetIds([]);
       setSentInfo(`Sent to ${d.recipients} ${d.recipients === 1 ? 'person' : 'people'}.`);
       onSent();
     } catch (err) {
@@ -78,7 +117,7 @@ function Composer({ onSent }) {
               value={targetType}
               onChange={(e) => {
                 setTargetType(e.target.value);
-                setTargetId('');
+                setTargetIds([]);
               }}
             >
               {isAdmin && <option value="all">Everyone</option>}
@@ -88,22 +127,21 @@ function Composer({ onSent }) {
           </div>
           {needsTarget && (
             <div className="field grow">
-              <label htmlFor="tid">{targetType === 'dept' ? 'Department' : 'Person'}</label>
-              <select id="tid" className="select" value={targetId} onChange={(e) => setTargetId(e.target.value)} required>
-                <option value="">Select…</option>
-                {targetType === 'dept'
-                  ? departments.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        @{d.name} ({d.member_count})
-                      </option>
-                    ))
-                  : users.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        @{u.name}
-                        {u.department_name ? ` · ${u.department_name}` : ''}
-                      </option>
-                    ))}
-              </select>
+              <label>{targetType === 'dept' ? 'Departments (select one or more)' : 'People (select one or more)'}</label>
+              <MultiPick
+                options={
+                  targetType === 'dept'
+                    ? departments.map((d) => ({ id: String(d.id), label: `@${d.name} (${d.member_count})` }))
+                    : users.map((u) => ({
+                        id: String(u.id),
+                        label: `@${u.name}${u.department_name ? ` · ${u.department_name}` : ''}`,
+                        short: `@${u.name}`,
+                      }))
+                }
+                value={targetIds}
+                onChange={setTargetIds}
+                searchable={targetType === 'user'}
+              />
             </div>
           )}
         </div>
@@ -119,7 +157,7 @@ function Composer({ onSent }) {
         {error && <div className="alert alert-error" role="alert">{error}</div>}
         {sentInfo && <div className="alert alert-ok">{sentInfo}</div>}
         <div className="row">
-          <button className="btn btn-primary" disabled={busy || !body.trim() || (needsTarget && !targetId)}>
+          <button className="btn btn-primary" disabled={busy || !body.trim() || (needsTarget && targetIds.length === 0)}>
             {busy ? 'Sending…' : 'Send'}
           </button>
           {!isAdmin && <span className="muted small">Messages to a department notify everyone in it.</span>}
