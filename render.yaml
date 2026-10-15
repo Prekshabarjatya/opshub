@@ -1,0 +1,32 @@
+# Render blueprint for the OpsHub API (Node + Socket.io). Untested template: review in the Render dashboard.
+# Create a managed Postgres first (Neon, or Render Postgres) and paste its connection string as DATABASE_URL.
+services:
+  - type: web
+    name: opshub-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    # "starter" or higher: the free plan sleeps, which delays real-time messages and push notifications.
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY
+        value: "1"
+      - key: PGSSL
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false          # paste your Postgres connection string
+      - key: CLIENT_ORIGIN
+        sync: false          # your Cloudflare site URL, e.g. https://opshub-web.<account>.workers.dev
+      - key: APP_URL
+        sync: false          # same as CLIENT_ORIGIN
+      - key: VAPID_PUBLIC_KEY
+        sync: false          # from: cd backend && npm run vapid
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_SUBJECT
+        sync: false          # mailto:you@yourcompany.com
