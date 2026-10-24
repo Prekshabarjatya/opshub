@@ -348,3 +348,16 @@ tr:last-child td { border-bottom: none; }
   .page-head { margin-bottom: 18px; }
   h1 { font-size: 21px; }
 }
+
+.kpi-btn { all: unset; box-sizing: border-box; display: block; cursor: pointer; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: var(--pad); transition: border-color 0.15s, transform 0.15s var(--ease); }
+.kpi-btn:hover { border-color: var(--muted); }
+.kpi-btn:active { transform: scale(0.99); }
+.kpi-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.kpi-btn.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.detail-card { margin-bottom: var(--gap); animation: rise 0.3s var(--ease) both; }
+.detail-h { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+.detail-cols { align-items: start; }
+.detail-card { scroll-margin-top: 80px; }
+.today-list .emp-tasks { margin-top: 10px; }
+.detail-card .today-list > li { align-items: flex-start; }
+.today-list .emp-tasks li { padding: 0; border: 0; }

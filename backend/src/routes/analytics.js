@@ -178,7 +178,7 @@ router.get(
     const prevStart = shiftDate(date, -13);
     const prevEnd = shiftDate(date, -7);
 
-    const [people, blocked, trend] = await Promise.all([
+    const [people, blocked, trend, todayTasks] = await Promise.all([
       pool.query(
         `SELECT u.id, u.name, d.name AS department,
                 COUNT(g.id) FILTER (WHERE g.goal_date = $1 AND g.status <> 'cancelled')::int AS goals_today,
@@ -216,7 +216,16 @@ router.get(
           GROUP BY d.id ORDER BY d.name`,
         [weekStart, prevStart, prevEnd, date, deptId]
       ),
+      pool.query(
+        `SELECT g.id, g.user_id, g.title, g.status
+           FROM goals g JOIN users u ON u.id = g.user_id
+          WHERE g.goal_date = $1 AND u.active AND ($2::int IS NULL OR u.department_id = $2)
+          ORDER BY g.created_at, g.id`,
+        [date, deptId]
+      ),
     ]);
+    const tasksBy = {};
+    for (const t of todayTasks.rows) (tasksBy[t.user_id] = tasksBy[t.user_id] || []).push({ id: t.id, title: t.title, status: t.status });
 
     const ppl = people.rows;
     const noPlan = ppl.filter((p) => p.goals_today === 0);
@@ -279,6 +288,7 @@ router.get(
       today: { people: ppl.length, planned: ppl.length - noPlan.length, eod: ppl.length - noEod.length, goals: goalsToday, done: doneToday },
       week: { pct: weekPct, prev_pct: prevPct, change: weekPct !== null && prevPct !== null ? weekPct - prevPct : null },
       insights,
+      people: ppl.map(({ id, name, department, goals_today, done_today, eod_today, last_update }) => ({ id, name, department, goals_today, done_today, eod_today, last_update, tasks: tasksBy[id] || [] })),
       no_plan: noPlan.map(({ id, name, department }) => ({ id, name, department })),
       no_eod: noEod.map(({ id, name, department, goals_today, done_today }) => ({ id, name, department, goals_today, done_today })),
       silent: silent.map(({ id, name, department, last_update }) => ({ id, name, department, last_update })),
