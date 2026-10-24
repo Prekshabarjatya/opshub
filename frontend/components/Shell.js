@@ -1,5 +1,6 @@
 'use client';
 
+import { Bell as BellIcon, ChartBar, ChatCircle, CheckSquare, GearSix, House, UsersThree } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -9,12 +10,12 @@ import { ROLE_LABEL, timeAgo } from '@/lib/format';
 import { isIOS } from '@/lib/push';
 
 const NAV = [
-  { href: '/today', label: 'Today', icon: '🏠', roles: ['super_admin', 'dept_head'] },
-  { href: '/worklog', label: 'Worklog', icon: '✅', roles: ['super_admin', 'dept_head', 'employee'] },
-  { href: '/messages', label: 'Messages', icon: '💬', roles: ['super_admin', 'dept_head', 'employee'] },
-  { href: '/analytics', label: 'Control Room', icon: '📊', roles: ['super_admin', 'dept_head'] },
-  { href: '/team', label: 'My Team', icon: '👥', roles: ['dept_head'] },
-  { href: '/admin', label: 'Admin', icon: '⚙️', roles: ['super_admin'] },
+  { href: '/today', label: 'Today', icon: House, roles: ['super_admin', 'dept_head'] },
+  { href: '/worklog', label: 'Worklog', icon: CheckSquare, roles: ['super_admin', 'dept_head', 'employee'] },
+  { href: '/messages', label: 'Messages', icon: ChatCircle, roles: ['super_admin', 'dept_head', 'employee'] },
+  { href: '/analytics', label: 'Control Room', icon: ChartBar, roles: ['super_admin', 'dept_head'] },
+  { href: '/team', label: 'My Team', icon: UsersThree, roles: ['dept_head'] },
+  { href: '/admin', label: 'Admin', icon: GearSix, roles: ['super_admin'] },
 ];
 
 // Quick "+ Add" menu: Super Admin adds departments / people, Dept Head adds team members.
@@ -177,7 +178,7 @@ function Bell() {
         aria-label={`Notifications${unread ? `, ${unread} unread` : ''}`}
         aria-expanded={open}
       >
-        🔔
+        <BellIcon size={19} />
         {unread > 0 && <span className="bell-count">{unread > 99 ? '99+' : unread}</span>}
       </button>
       {open && (
@@ -264,7 +265,7 @@ export default function Shell({ children }) {
         <nav className="nav" aria-label="Main">
           {items.map((n) => (
             <Link key={n.href} href={n.href} className={pathname.startsWith(n.href) ? 'active' : ''}>
-              <span className="nav-icon">{n.icon}</span>
+              <span className="nav-icon"><n.icon size={19} weight={pathname.startsWith(n.href) ? 'fill' : 'regular'} /></span>
               {n.label}
             </Link>
           ))}

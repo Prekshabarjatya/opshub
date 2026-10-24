@@ -64,7 +64,15 @@ export default function TodayPage() {
 
   if (!allowed) return null;
   if (error) return <div className="alert alert-error" role="alert">{error}</div>;
-  if (!data) return <div className="empty">Loading…</div>;
+  if (!data)
+    return (
+      <div className="stack" aria-busy="true">
+        <div className="skeleton" style={{ height: 34, width: 260 }} />
+        <div className="skeleton" style={{ height: 150 }} />
+        <div className="skeleton" style={{ height: 96 }} />
+        <div className="skeleton" style={{ height: 220 }} />
+      </div>
+    );
 
   const t = data.today;
   const hour = new Date().getHours();
@@ -113,7 +121,7 @@ export default function TodayPage() {
           <span className="muted small">grouped by reason, biggest first</span>
         </div>
         {data.blocker_groups.length === 0 ? (
-          <div className="empty">Nothing is blocked. 🎉</div>
+          <div className="empty">Nothing is blocked right now.</div>
         ) : (
           data.blocker_groups.map((g) => (
             <div key={g.reason} className="blocker-group">
@@ -150,7 +158,7 @@ export default function TodayPage() {
           </div>
           <PeopleList
             people={data.no_eod}
-            empty="Everyone has reported. ✅"
+            empty="Everyone has reported."
             detail={(p) => (p.goals_today ? `${p.done_today}/${p.goals_today} done` : 'no plan today')}
           />
         </div>

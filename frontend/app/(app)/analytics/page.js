@@ -20,9 +20,9 @@ import { useNotifications } from '@/lib/notifications';
 import { dateStr, daysAgoStr, fmtDateTime, fmtDay, ROLE_LABEL } from '@/lib/format';
 import { Progress, StatusBadge, useRoleGuard } from '@/components/ui';
 
-const COLOR_DONE = '#15803d';
-const COLOR_PENDING = '#cbd3e3';
-const COLOR_BAR = '#4338ca';
+const COLOR_DONE = 'var(--ok)';
+const COLOR_PENDING = 'var(--track)';
+const COLOR_BAR = 'var(--accent)';
 
 function DeptPie({ dept }) {
   const data = [
@@ -252,9 +252,9 @@ export default function AnalyticsPage() {
           </div>
 
           {data.blocked_tasks.length > 0 && (
-            <div className="card" style={{ borderColor: '#f0b8b8', background: '#fff8f8', marginBottom: 16 }}>
+            <div className="card" style={{ borderColor: 'var(--danger)', marginBottom: 16 }}>
               <div className="card-head">
-                <h2 style={{ color: 'var(--danger)' }}>⚠ Blocked for more than 24 hours</h2>
+                <h2 style={{ color: 'var(--danger)' }}>Blocked for more than 24 hours</h2>
               </div>
               {data.blocked_tasks.map((t) => (
                 <div className="blocked-item" key={t.id}>
