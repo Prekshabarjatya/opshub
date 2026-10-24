@@ -8,5 +8,8 @@ execSync('next build', {
   stdio: 'inherit',
   env: { ...process.env, STATIC_EXPORT: '1', NEXT_PUBLIC_BUILD_ID: id },
 });
+// With a custom distDir, `next build` writes the static export there; wrangler uploads ./out.
+fs.rmSync('out', { recursive: true, force: true });
+fs.cpSync('.next-export', 'out', { recursive: true });
 fs.writeFileSync('out/version.json', JSON.stringify({ id }));
 console.log(`Build id ${id}`);
