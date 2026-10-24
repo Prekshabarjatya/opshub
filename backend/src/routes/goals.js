@@ -37,7 +37,7 @@ router.get(
     if (!isDate(date)) throw httpError(400, 'Invalid date');
     const target = await resolveTarget(req.user, req.query.user_id);
     const { rows } = await pool.query(
-      `SELECT id, user_id, goal_date, title, status, created_at, updated_at, completed_at, blocked_at
+      `SELECT id, user_id, goal_date, title, status, created_at, updated_at, completed_at, blocked_at, blocked_reason
          FROM goals
         WHERE user_id = $1 AND goal_date = $2
         ORDER BY created_at, id`,
@@ -64,7 +64,7 @@ router.post(
        VALUES ($1, $2, $3, $4, $5::text,
                CASE WHEN $5::text = 'completed' THEN now() END,
                CASE WHEN $5::text = 'blocked' THEN now() END)
-       RETURNING id, user_id, goal_date, title, status, created_at, updated_at, completed_at, blocked_at`,
+       RETURNING id, user_id, goal_date, title, status, created_at, updated_at, completed_at, blocked_at, blocked_reason`,
       [target.id, req.user.id, date, title, status]
     );
     emitActivity(target.department_id);
@@ -96,7 +96,11 @@ router.patch(
       status = req.body.status;
       if (!STATUSES.includes(status)) throw httpError(400, 'Invalid status');
     }
-    if (title === null && status === null) throw httpError(400, 'Nothing to update');
+    let reason = null;
+    if (req.body.blocked_reason !== undefined) {
+      reason = String(req.body.blocked_reason || '').trim().slice(0, 300) || null;
+    }
+    if (title === null && status === null && reason === null) throw httpError(400, 'Nothing to update');
 
     const { rows } = await pool.query(
       `UPDATE goals SET
@@ -108,13 +112,55 @@ router.patch(
          blocked_at   = CASE WHEN $3::text IS NULL THEN blocked_at
                              WHEN $3::text = 'blocked' THEN COALESCE(blocked_at, now())
                              ELSE NULL END,
+         blocked_reason = CASE WHEN COALESCE($3::text, status) <> 'blocked' THEN NULL
+                               ELSE COALESCE($4::text, blocked_reason) END,
          updated_at   = now()
        WHERE id = $1
-       RETURNING id, user_id, goal_date, title, status, created_at, updated_at, completed_at, blocked_at`,
-      [id, title, status]
+       RETURNING id, user_id, goal_date, title, status, created_at, updated_at, completed_at, blocked_at, blocked_reason`,
+      [id, title, status, reason]
     );
     emitActivity(goal.owner_department_id);
     res.json({ goal: rows[0] });
+  })
+);
+
+// Bring the caller's unfinished goals from their last earlier worklog day into `goal_date`.
+// The goals are moved (not copied) so nothing is double counted and blocked_at keeps its age.
+router.post(
+  '/carry-over',
+  wrap(async (req, res) => {
+    const date = req.body.goal_date || todayISO();
+    if (!isDate(date)) throw httpError(400, 'Invalid date');
+    const { rows } = await pool.query(
+      `UPDATE goals SET goal_date = $2, updated_at = now()
+        WHERE user_id = $1
+          AND status IN ('todo', 'in_progress', 'blocked')
+          AND goal_date = (SELECT MAX(goal_date) FROM goals
+                            WHERE user_id = $1 AND goal_date < $2
+                              AND status IN ('todo', 'in_progress', 'blocked'))
+        RETURNING id, user_id, goal_date, title, status, created_at, updated_at, completed_at, blocked_at, blocked_reason`,
+      [req.user.id, date]
+    );
+    emitActivity(req.user.department_id);
+    res.json({ goals: rows });
+  })
+);
+
+// Unfinished goals waiting on an earlier day (drives the "bring forward" prompt).
+router.get(
+  '/carry-over',
+  wrap(async (req, res) => {
+    const date = req.query.date || todayISO();
+    if (!isDate(date)) throw httpError(400, 'Invalid date');
+    const { rows } = await pool.query(
+      `SELECT COUNT(*)::int AS count, MAX(goal_date) AS from_date FROM goals
+        WHERE user_id = $1 AND status IN ('todo', 'in_progress', 'blocked')
+          AND goal_date = (SELECT MAX(goal_date) FROM goals
+                            WHERE user_id = $1 AND goal_date < $2
+                              AND status IN ('todo', 'in_progress', 'blocked'))`,
+      [req.user.id, date]
+    );
+    res.json(rows[0]);
   })
 );
 

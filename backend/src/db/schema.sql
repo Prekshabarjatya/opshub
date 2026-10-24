@@ -71,6 +71,9 @@ ALTER TABLE goals DROP CONSTRAINT IF EXISTS goals_status_check;
 ALTER TABLE goals ADD CONSTRAINT goals_status_check
   CHECK (status IN ('todo', 'in_progress', 'completed', 'blocked', 'cancelled'));
 
+-- Why a goal is blocked (shown to managers, grouped in the Today view).
+ALTER TABLE goals ADD COLUMN IF NOT EXISTS blocked_reason TEXT;
+
 CREATE INDEX IF NOT EXISTS idx_goals_user_date ON goals(user_id, goal_date);
 CREATE INDEX IF NOT EXISTS idx_goals_date ON goals(goal_date);
 CREATE INDEX IF NOT EXISTS idx_goals_blocked ON goals(blocked_at) WHERE status = 'blocked';

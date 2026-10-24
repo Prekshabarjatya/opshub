@@ -102,6 +102,7 @@ async function seed() {
   }
 
   // Goals for today and the previous 6 days.
+  const BLOCK_REASONS = ['Waiting on vendor payment approval', 'Waiting on manager sign-off', 'Waiting on Tech team', 'Waiting on client reply'];
   let blockedForced = false;
   for (const person of staff) {
     for (let ago = 6; ago >= 0; ago--) {
@@ -129,10 +130,11 @@ async function seed() {
               : new Date(Date.now() - (ago * 24 + 6) * 3600000)
             : null;
 
+        const reason = status === 'blocked' ? BLOCK_REASONS[Math.floor(rand() * BLOCK_REASONS.length)] : null;
         await pool.query(
-          `INSERT INTO goals (user_id, created_by, goal_date, title, status, created_at, updated_at, completed_at, blocked_at)
-           VALUES ($1, $1, $2, $3, $4, $5, $5, $6, $7)`,
-          [person.id, date, titles[i], status, created, completedAt, blockedAt]
+          `INSERT INTO goals (user_id, created_by, goal_date, title, status, created_at, updated_at, completed_at, blocked_at, blocked_reason)
+           VALUES ($1, $1, $2, $3, $4, $5, $5, $6, $7, $8)`,
+          [person.id, date, titles[i], status, created, completedAt, blockedAt, reason]
         );
       }
 

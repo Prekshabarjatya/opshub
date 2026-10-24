@@ -53,5 +53,5 @@ export const STATUSES = [
 export const STATUS_LABEL = Object.fromEntries(STATUSES.map((s) => [s.value, s.label]));
 
 export function homeFor(user) {
-  return user && (user.role === 'super_admin' || user.role === 'dept_head') ? '/analytics' : '/worklog';
+  return user && (user.role === 'super_admin' || user.role === 'dept_head') ? '/today' : '/worklog';
 }

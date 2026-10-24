@@ -251,3 +251,30 @@ tr:last-child td { border-bottom: none; }
 .multipick-list { max-height: 170px; overflow: auto; border: 1px solid var(--border, #d1d5db); border-radius: 8px; background: var(--surface, #fff); }
 .multipick-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 14px; cursor: pointer; }
 .multipick-item:hover { background: rgba(0,0,0,.04); }
+
+/* ---------- Today ---------- */
+.strong { font-weight: 600; }
+.text-ok { color: var(--ok); }
+.text-bad { color: var(--danger); }
+.grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.today-pulse { margin: 16px 0; }
+.today-pulse .card + .card { margin-top: 0; }
+.today-pulse .value { margin-bottom: 8px; }
+.insights { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.insight { padding: 10px 14px; border-radius: 9px; font-size: 15px; line-height: 1.45; border-left: 4px solid; }
+.insight.bad { background: var(--danger-soft); border-color: var(--danger); }
+.insight.warn { background: var(--warn-soft); border-color: var(--warn); }
+.insight.good { background: var(--ok-soft); border-color: var(--ok); }
+.today-list { list-style: none; margin: 0; padding: 0; }
+.today-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--border); }
+.today-list li:first-child { border-top: 0; }
+.blocker-group { border-top: 1px solid var(--border); }
+.blocker-group:first-of-type { border-top: 0; }
+.blocker-head { all: unset; box-sizing: border-box; cursor: pointer; width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 0; flex-wrap: wrap; }
+.blocker-head .strong { flex: 1; min-width: 180px; }
+.blocker-group .today-list { padding: 0 0 8px 14px; border-left: 2px solid var(--border); }
+.carry { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+@media (max-width: 900px) { .grid.cols-3 { grid-template-columns: minmax(0, 1fr); } }
+.block-reason { width: 100%; padding: 8px 10px; background: var(--danger-soft); border-radius: 8px; }
+.block-reason .chip { cursor: pointer; }
+.link { all: unset; cursor: pointer; color: var(--accent); text-decoration: underline; }

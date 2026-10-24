@@ -264,6 +264,7 @@ export default function AnalyticsPage() {
                       {t.user_name}
                       {t.department ? ` · ${t.department}` : ''} · blocked {t.hours_blocked}h (since {fmtDateTime(t.blocked_at)})
                     </div>
+                    <div className="small">{t.blocked_reason ? `Why: ${t.blocked_reason}` : 'No reason given'}</div>
                   </div>
                   <Link
                     className="btn btn-sm"

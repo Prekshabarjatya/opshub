@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import { dateStr, fmtTime, ROLE_LABEL } from '@/lib/format';
+import { dateStr, fmtDay, fmtTime, ROLE_LABEL } from '@/lib/format';
+
+const QUICK_REASONS = ['Waiting on manager', 'Waiting on another team', 'Waiting on client', 'Waiting on payment'];
 import { Progress, StatusSelect } from '@/components/ui';
 
 export default function WorklogPage() {
@@ -21,6 +23,8 @@ export default function WorklogPage() {
   const [busy, setBusy] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
+  const [carry, setCarry] = useState(null);
+  const [reasons, setReasons] = useState({});
 
   // Deep link from My Team: /worklog?user=ID
   useEffect(() => {
@@ -65,6 +69,37 @@ export default function WorklogPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Unfinished goals left on an earlier day: offer to bring them to today in one tap.
+  useEffect(() => {
+    setCarry(null);
+    if (!isSelf || date !== today) return;
+    api(`/api/goals/carry-over?date=${date}`).then((d) => setCarry(d.count ? d : null)).catch(() => {});
+  }, [isSelf, date, today]);
+
+  async function bringForward() {
+    setBusy(true);
+    try {
+      const d = await api('/api/goals/carry-over', { method: 'POST', body: { goal_date: date } });
+      setGoals((g) => [...g, ...d.goals]);
+      setCarry(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function saveReason(goal, reason) {
+    const text = (reason ?? reasons[goal.id] ?? '').trim();
+    if (!text) return;
+    try {
+      const d = await api(`/api/goals/${goal.id}`, { method: 'PATCH', body: { blocked_reason: text } });
+      setGoals((gs) => gs.map((g) => (g.id === goal.id ? d.goal : g)));
+    } catch (err) {
+      setError(err.message);
+    }
+  }
 
   async function addGoal(e) {
     e.preventDefault();
@@ -191,7 +226,18 @@ export default function WorklogPage() {
 
       {error && <div className="alert alert-error" style={{ marginBottom: 14 }} role="alert">{error}</div>}
 
-      {isSelf && date === today && !loading && goals.length === 0 && (
+      {carry && (
+        <div className="alert alert-info carry">
+          <span>
+            {carry.count} unfinished task{carry.count > 1 ? 's' : ''} from {fmtDay(String(carry.from_date).slice(0, 10))}.
+          </span>
+          <button className="btn btn-primary btn-sm" disabled={busy} onClick={bringForward}>
+            Bring to today
+          </button>
+        </div>
+      )}
+
+      {isSelf && date === today && !loading && goals.length === 0 && !carry && (
         <div className="alert alert-warn" style={{ marginBottom: 14 }}>
           Good morning! You have not set any goals for today yet. Add them below.
         </div>
@@ -261,6 +307,32 @@ export default function WorklogPage() {
                   <button className="btn btn-sm" onClick={() => startEdit(g)} aria-label={`Edit ${g.title}`}>
                     Edit
                   </button>
+                  {g.status === 'blocked' && (
+                    <div className="block-reason">
+                      {g.blocked_reason ? (
+                        <span className="small">
+                          <b>Why blocked:</b> {g.blocked_reason}{' '}
+                          <button className="link small" onClick={() => setGoals((gs) => gs.map((x) => (x.id === g.id ? { ...x, blocked_reason: null } : x)))}>change</button>
+                        </span>
+                      ) : (
+                        <form className="row" onSubmit={(e) => { e.preventDefault(); saveReason(g); }}>
+                          <span className="small strong">Why is it blocked?</span>
+                          {QUICK_REASONS.map((r) => (
+                            <button type="button" key={r} className="chip" onClick={() => saveReason(g, r)}>{r}</button>
+                          ))}
+                          <input
+                            className="input grow"
+                            placeholder="Or type the reason…"
+                            maxLength={300}
+                            value={reasons[g.id] || ''}
+                            onChange={(e) => setReasons((m) => ({ ...m, [g.id]: e.target.value }))}
+                            aria-label="Blocked reason"
+                          />
+                          <button className="btn btn-sm btn-primary" disabled={!(reasons[g.id] || '').trim()}>Save</button>
+                        </form>
+                      )}
+                    </div>
+                  )}
                 </>
               )}
             </div>

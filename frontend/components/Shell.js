@@ -9,6 +9,7 @@ import { ROLE_LABEL, timeAgo } from '@/lib/format';
 import { isIOS } from '@/lib/push';
 
 const NAV = [
+  { href: '/today', label: 'Today', icon: '🏠', roles: ['super_admin', 'dept_head'] },
   { href: '/worklog', label: 'Worklog', icon: '✅', roles: ['super_admin', 'dept_head', 'employee'] },
   { href: '/messages', label: 'Messages', icon: '💬', roles: ['super_admin', 'dept_head', 'employee'] },
   { href: '/analytics', label: 'Control Room', icon: '📊', roles: ['super_admin', 'dept_head'] },
