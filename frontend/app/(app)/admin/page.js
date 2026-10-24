@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { shareLoginLink } from '@/lib/invite';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { ROLE_LABEL } from '@/lib/format';
@@ -82,6 +83,12 @@ export default function AdminPage() {
     const pw = window.prompt(`New password for ${u.name} (min 8 characters):`);
     if (pw) patchUser(u.id, { password: pw }, `Password updated for ${u.name}.`);
   };
+
+  const sendLink = (u) =>
+    run(async () => {
+      const t = await shareLoginLink(u);
+      if (t) setNotice(t);
+    });
 
   const deleteUser = (u) => {
     if (!window.confirm(`Permanently delete ${u.name}? Their goals and notes are deleted too. Consider deactivating instead.`)) return;
@@ -267,6 +274,9 @@ export default function AdminPage() {
                       </span>
                     </td>
                     <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                      {u.active && u.role !== 'super_admin' && (
+                        <><button className="btn btn-sm btn-primary" onClick={() => sendLink(u)}>Share sign-in link</button>{' '}</>
+                      )}
                       <button className="btn btn-sm" onClick={() => resetPassword(u)}>Reset password</button>{' '}
                       {!self && (
                         <>

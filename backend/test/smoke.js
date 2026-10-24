@@ -238,6 +238,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const teamList = await call('GET', '/api/users', { token: anita.token });
   check('dept head sees emails for their own team only', teamList.data.users.filter((u) => u.department_id === anita.user.department_id).every((u) => !!u.email) && teamList.data.users.filter((u) => u.department_id === tech.id).every((u) => !u.email));
   check('new team member can sign in', (await call('POST', '/api/auth/login', { body: { email: 'team.newbie@opshub.example', password: 'Passw0rd!x' } })).status === 200);
+
+  console.log('Sign-in links');
+  const link = await call('POST', `/api/users/${rahulId}/login-link`, { token: anita.token });
+  check('dept head can make a sign-in link for own team', link.status === 201 && !!link.data.token);
+  const viaLink = await call('POST', '/api/auth/link', { body: { token: link.data.token } });
+  check('sign-in link logs that person in', viaLink.status === 200 && viaLink.data.user.id === rahulId);
+  check('sign-in link works only once', (await call('POST', '/api/auth/link', { body: { token: link.data.token } })).status === 401);
+  check('employee cannot make sign-in links', (await call('POST', `/api/users/${rahulId}/login-link`, { token: rahul.token })).status === 403);
   await call('DELETE', `/api/users/${headAdd.data.user.id}`, { token: admin.token });
 
   console.log('Push (PWA)');

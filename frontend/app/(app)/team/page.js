@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { shareLoginLink } from '@/lib/invite';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -119,7 +120,17 @@ export default function TeamPage() {
                   <td>{ROLE_LABEL[m.role]}</td>
                   <td style={{ textAlign: 'right' }}>
                     {m.id !== user.id && (
-                      <Link className="btn btn-sm" href={`/worklog?user=${m.id}`}>View worklog</Link>
+                      <>
+                        {m.role === 'employee' && (
+                          <button
+                            className="btn btn-sm btn-primary"
+                            onClick={() => shareLoginLink(m).then((t) => t && setNotice(t)).catch((e) => setError(e.message))}
+                          >
+                            Share sign-in link
+                          </button>
+                        )}{' '}
+                        <Link className="btn btn-sm" href={`/worklog?user=${m.id}`}>View worklog</Link>
+                      </>
                     )}
                   </td>
                 </tr>

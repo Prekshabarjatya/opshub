@@ -9,3 +9,6 @@
 /manifest.webmanifest
   Content-Type: application/manifest+json
   Cache-Control: no-cache
+
+/version.json
+  Cache-Control: no-store

@@ -6,7 +6,7 @@ const isExport = process.env.STATIC_EXPORT === '1';
 module.exports = {
   reactStrictMode: true,
   ...(isExport
-    ? { output: 'export' }
+    ? { output: 'export', distDir: '.next-export' } // separate dir so a deploy never breaks a running `next dev`
     : {
         // Local dev / `next start`. For the static export the same headers live in public/_headers.
         async headers() {

@@ -1,8 +1,9 @@
 const express = require('express');
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const pool = require('../db/pool');
 const { authenticate, requireRole } = require('../middleware/auth');
-const { httpError, wrap, toInt } = require('../utils');
+const { httpError, wrap, toInt, canAccessUser } = require('../utils');
 
 const router = express.Router();
 router.use(authenticate);
@@ -34,6 +35,32 @@ router.get(
         return rest;
       }),
     });
+  })
+);
+
+// Create a one-time sign-in link for a person (valid 7 days, single use).
+// Super Admin: anyone except other Super Admins. Dept Head: people in their own department.
+router.post(
+  '/:id/login-link',
+  requireRole('super_admin', 'dept_head'),
+  wrap(async (req, res) => {
+    const id = toInt(req.params.id);
+    if (!id) throw httpError(400, 'Invalid user id');
+    const { rows } = await pool.query('SELECT id, role, department_id, active FROM users WHERE id = $1', [id]);
+    const target = rows[0];
+    if (!target) throw httpError(404, 'User not found');
+    if (!target.active) throw httpError(400, 'This account is deactivated');
+    if (target.role === 'super_admin' && target.id !== req.user.id) throw httpError(403, 'Links cannot be made for another Super Admin');
+    if (req.user.role === 'dept_head' && target.role !== 'employee') throw httpError(403, 'You can only make links for your team');
+    if (!canAccessUser(req.user, target)) throw httpError(403, 'You can only make links for your team');
+    const token = crypto.randomBytes(24).toString('base64url');
+    const hash = crypto.createHash('sha256').update(token).digest('hex');
+    const { rows: link } = await pool.query(
+      `INSERT INTO login_links (token_hash, user_id, created_by, expires_at)
+       VALUES ($1, $2, $3, now() + interval '7 days') RETURNING expires_at`,
+      [hash, id, req.user.id]
+    );
+    res.status(201).json({ token, expires_at: link[0].expires_at });
   })
 );
 

@@ -6,12 +6,24 @@ import { useAuth } from '@/lib/auth';
 import { homeFor } from '@/lib/format';
 
 export default function LoginPage() {
-  const { user, loading, login } = useAuth();
+  const { user, loading, login, loginWithLink } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  // Shared sign-in link: /login#k=<one-time token>. Signs in straight away, then clears the token from the address bar.
+  useEffect(() => {
+    const k = new URLSearchParams(window.location.hash.slice(1)).get('k');
+    if (!k) return;
+    window.history.replaceState(null, '', '/login');
+    setBusy(true);
+    loginWithLink(k)
+      .then((u) => router.replace(homeFor(u)))
+      .catch((err) => setError(err.message))
+      .finally(() => setBusy(false));
+  }, [loginWithLink, router]);
 
   useEffect(() => {
     if (!loading && user) router.replace(homeFor(user));

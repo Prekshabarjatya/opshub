@@ -88,3 +88,14 @@ CREATE TABLE IF NOT EXISTS eod_notes (
   UNIQUE (user_id, note_date)
 );
 CREATE INDEX IF NOT EXISTS idx_eod_date ON eod_notes(note_date, updated_at DESC);
+
+-- One-time sign-in links an admin / dept head shares with a person (only a SHA-256 of the token is stored).
+CREATE TABLE IF NOT EXISTS login_links (
+  id         SERIAL PRIMARY KEY,
+  token_hash TEXT NOT NULL UNIQUE,
+  user_id    INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_by INT REFERENCES users(id) ON DELETE SET NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  used_at    TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

@@ -28,6 +28,13 @@ export function AuthProvider({ children }) {
     return d.user;
   }, []);
 
+  const loginWithLink = useCallback(async (linkToken) => {
+    const d = await api('/api/auth/link', { method: 'POST', body: { token: linkToken }, auth: false });
+    setToken(d.token);
+    setUser(d.user);
+    return d.user;
+  }, []);
+
   const logout = useCallback(async () => {
     // Stop this person's alerts on this device (a shared phone must not keep receiving them).
     try {
@@ -40,7 +47,7 @@ export function AuthProvider({ children }) {
     window.location.assign('/login');
   }, []);
 
-  const value = useMemo(() => ({ user, loading, login, logout }), [user, loading, login, logout]);
+  const value = useMemo(() => ({ user, loading, login, loginWithLink, logout }), [user, loading, login, loginWithLink, logout]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

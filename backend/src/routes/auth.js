@@ -1,5 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const pool = require('../db/pool');
@@ -47,6 +48,28 @@ router.post(
 
     const token = jwt.sign({ sub: row.id }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
     const user = await loadUser(row.id);
+    res.json({ token, user: publicUser(user) });
+  })
+);
+
+// One-time sign-in link: the token is single use and expires, so a forwarded link stops working after first use.
+router.post(
+  '/link',
+  loginLimiter,
+  wrap(async (req, res) => {
+    const raw = String(req.body.token || '');
+    if (!raw) throw httpError(400, 'Missing sign-in link');
+    const hash = crypto.createHash('sha256').update(raw).digest('hex');
+    const { rows } = await pool.query(
+      `UPDATE login_links SET used_at = now()
+        WHERE token_hash = $1 AND used_at IS NULL AND expires_at > now()
+        RETURNING user_id`,
+      [hash]
+    );
+    if (!rows[0]) throw httpError(401, 'This sign-in link has expired or was already used. Ask for a new one.');
+    const user = await loadUser(rows[0].user_id);
+    if (!user || !user.active) throw httpError(401, 'This account is not active');
+    const token = jwt.sign({ sub: user.id }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
     res.json({ token, user: publicUser(user) });
   })
 );

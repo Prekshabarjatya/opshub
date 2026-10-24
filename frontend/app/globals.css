@@ -25,8 +25,8 @@
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
+/* Dark is the house theme for everyone. */
+:root {
     --bg: #0f0f11;
     --surface: #18181b;
     --surface-2: #1d1d21;
@@ -47,8 +47,7 @@
     --info-soft: #1d2440;
     --track: #2a2a30;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    color-scheme: dark;
-  }
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }

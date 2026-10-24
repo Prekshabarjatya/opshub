@@ -1,6 +1,7 @@
 import { GeistSans } from 'geist/font/sans';
 import './globals.css';
 import { AuthProvider } from '@/lib/auth';
+import UpdateCheck from '@/components/UpdateCheck';
 
 export const metadata = {
   title: 'OpsHub',
@@ -17,7 +18,7 @@ export const metadata = {
   appleWebApp: {
     capable: true,
     title: 'OpsHub',
-    statusBarStyle: 'default',
+    statusBarStyle: 'black-translucent',
   },
   formatDetection: { telephone: false },
 };
@@ -25,16 +26,14 @@ export const metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f6f6f7' },
-    { media: '(prefers-color-scheme: dark)', color: '#0f0f11' },
-  ],
+  themeColor: '#0f0f11',
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={GeistSans.variable}>
       <body>
+        <UpdateCheck />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
