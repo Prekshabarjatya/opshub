@@ -321,3 +321,30 @@ tr:last-child td { border-bottom: none; }
 .skeleton { border-radius: var(--radius-sm); background: linear-gradient(90deg, var(--track), var(--surface-2), var(--track)); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
 @keyframes shimmer { to { background-position: -200% 0; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* ---------- Spacing system (4px base: 8 / 12 / 16 / 20 / 24 / 32) ---------- */
+:root { --gap: 20px; --pad: 20px; }
+.card { padding: var(--pad); }
+.card + .card, .grid + .card, .card + .grid, .grid + .grid, .alert + .card { margin-top: var(--gap); }
+.grid { gap: var(--gap); }
+.grid > .card + .card { margin-top: 0; }
+.today-pulse { margin: var(--gap) 0; }
+.card-head { margin-bottom: 16px; }
+.card > h2:first-child { margin-bottom: 16px; }
+.page-head { margin-bottom: 24px; gap: 16px; }
+.page-head p { margin-top: 6px; }
+.kpi { padding: var(--pad); }
+.kpi .value { margin: 8px 0 12px; }
+.goal { padding: 14px 0; gap: 12px; }
+.today-list li { padding: 12px 0; }
+.insights { gap: 10px; }
+.blocker-head { padding: 14px 0; }
+.block-reason { margin-top: 4px; padding: 10px 12px; }
+.row { gap: 10px; }
+.stack { gap: 16px; }
+@media (max-width: 780px) {
+  :root { --gap: 14px; --pad: 16px; }
+  .content { padding: 20px 16px 104px; }
+  .page-head { margin-bottom: 18px; }
+  h1 { font-size: 21px; }
+}

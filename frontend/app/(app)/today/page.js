@@ -89,7 +89,7 @@ export default function TodayPage() {
       </div>
 
       <div className="card">
-        <h2 style={{ marginTop: 0 }}>Needs attention</h2>
+        <h2>Needs attention</h2>
         <ul className="insights">
           {data.insights.map((i, n) => (
             <li key={n} className={`insight ${i.tone}`}>{i.text}</li>

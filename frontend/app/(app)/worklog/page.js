@@ -224,7 +224,7 @@ export default function WorklogPage() {
         </div>
       </div>
 
-      {error && <div className="alert alert-error" style={{ marginBottom: 14 }} role="alert">{error}</div>}
+      {error && <div className="alert alert-error" style={{ marginBottom: 'var(--gap)' }} role="alert">{error}</div>}
 
       {carry && (
         <div className="alert alert-info carry">
@@ -238,7 +238,7 @@ export default function WorklogPage() {
       )}
 
       {isSelf && date === today && !loading && goals.length === 0 && !carry && (
-        <div className="alert alert-warn" style={{ marginBottom: 14 }}>
+        <div className="alert alert-warn" style={{ marginBottom: 'var(--gap)' }}>
           Good morning! You have not set any goals for today yet. Add them below.
         </div>
       )}
@@ -253,7 +253,7 @@ export default function WorklogPage() {
         </div>
         <Progress pct={stats.pct} />
 
-        <form className="row" style={{ margin: '16px 0 6px' }} onSubmit={addGoal}>
+        <form className="row" style={{ margin: '16px 0 8px' }} onSubmit={addGoal}>
           <input
             className="input grow"
             placeholder={isSelf ? 'Add a goal for this day…' : 'Assign a goal…'}

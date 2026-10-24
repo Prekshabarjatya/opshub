@@ -69,8 +69,8 @@ export default function TeamPage() {
         </div>
       </div>
 
-      {error && <div className="alert alert-error" style={{ marginBottom: 14 }} role="alert">{error}</div>}
-      {notice && <div className="alert alert-ok" style={{ marginBottom: 14 }}>{notice}</div>}
+      {error && <div className="alert alert-error" style={{ marginBottom: 'var(--gap)' }} role="alert">{error}</div>}
+      {notice && <div className="alert alert-ok" style={{ marginBottom: 'var(--gap)' }}>{notice}</div>}
 
       <div className="card" id="add-member">
         <div className="card-head">

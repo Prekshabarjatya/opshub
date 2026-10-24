@@ -172,7 +172,7 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      <div className="card" style={{ marginBottom: 16 }}>
+      <div className="card" style={{ marginBottom: 'var(--gap)' }}>
         <div className="row">
           <div className="field">
             <label htmlFor="from">From</label>
@@ -222,12 +222,12 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {error && <div className="alert alert-error" style={{ marginBottom: 16 }} role="alert">{error}</div>}
+      {error && <div className="alert alert-error" style={{ marginBottom: 'var(--gap)' }} role="alert">{error}</div>}
       {loading && <div className="card empty">Loading…</div>}
 
       {data && (
         <>
-          <div className="grid cols-4" style={{ marginBottom: 16 }}>
+          <div className="grid cols-4" style={{ marginBottom: 'var(--gap)' }}>
             <div className="card kpi">
               <div className="label">Goals in range</div>
               <div className="value">
@@ -252,7 +252,7 @@ export default function AnalyticsPage() {
           </div>
 
           {data.blocked_tasks.length > 0 && (
-            <div className="card" style={{ borderColor: 'var(--danger)', marginBottom: 16 }}>
+            <div className="card" style={{ borderColor: 'var(--danger)', marginBottom: 'var(--gap)' }}>
               <div className="card-head">
                 <h2 style={{ color: 'var(--danger)' }}>Blocked for more than 24 hours</h2>
               </div>
@@ -314,7 +314,7 @@ export default function AnalyticsPage() {
             </div>
           )}
 
-          <div className="grid cols-2" style={{ marginTop: 16, alignItems: 'start' }}>
+          <div className="grid cols-2" style={{ marginTop: 'var(--gap)', alignItems: 'start' }}>
             <div className="card" style={{ marginTop: 0 }}>
               <div className="card-head">
                 <h2>Employee productivity</h2>
